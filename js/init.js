@@ -3,7 +3,7 @@ var vrHeadset = false;
 
 $(document).ready(function(){
   var game = new AsteroidVR({
-    vrheadset: false,
+    vrheadset: true,
     hwaccel: true,
     target: "game"
   });
