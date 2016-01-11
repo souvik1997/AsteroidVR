@@ -32,7 +32,7 @@ var AsteroidVR = (function() {
     this.clock = new THREE.Clock();
     // Setup scene
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(90, this.container.offsetWidth/this.container.offsetHeight, 1, 100000);
+    this.camera = new THREE.PerspectiveCamera((options.vrheadset ? 90 : 45), this.container.offsetWidth/this.container.offsetHeight, 1, 100000);
     this.camera.position.set(0,0,0);
     this.scene.add(this.camera);
   

@@ -4,8 +4,8 @@ var Asteroid = (function() {
       color: options.color
     });
     var points = [];
-    var SIZE = 100;
-    for (var i = 0; i < Math.random() * 10 + 3; i++)
+    var SIZE = Math.random() * 100 + 50;
+    for (var i = 0; i < 20; i++)
     {
       points.push(new THREE.Vector3(
         options.position.x + Math.random() * 2*SIZE - SIZE, 
