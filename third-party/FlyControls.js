@@ -185,21 +185,24 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.update = function( delta ) {
-
+    this.updateMovementVector();
 		var moveMult = delta * this.movementSpeed;
 		var rotMult = delta * this.rollSpeed;
-
-		this.object.translateX( this.moveVector.x * moveMult );
-		this.object.translateY( this.moveVector.y * moveMult );
-		this.object.translateZ( this.moveVector.z * moveMult );
+    
 
 		this.tmpQuaternion.set( this.rotationVector.x * rotMult, this.rotationVector.y * rotMult, this.rotationVector.z * rotMult, 1 ).normalize();
-		this.object.quaternion.multiply( this.tmpQuaternion );
+    var tmpQ2 = this.object.quaternion.clone();
+		tmpQ2.multiply( this.tmpQuaternion );
 
 		// expose the rotation vector for convenience
-		this.object.rotation.setFromQuaternion( this.object.quaternion, this.object.rotation.order );
-    //this.object.__dirtyRotation = true;
-    //this.object.updateMatrix();
+		this.object.rotation.setFromQuaternion( tmpQ2, this.object.rotation.order );
+    this.object.__dirtyRotation = true;
+    //this.object.__dirtyPosition = true;
+    var thrust = this.moveVector.clone().applyEuler(this.object.rotation).setLength(1000);
+    var linearVelocity = this.object.getLinearVelocity().clone();
+    thrust.multiplyScalar(delta);
+    linearVelocity.add(thrust);
+		this.object.setLinearVelocity(linearVelocity);
 
 	};
 

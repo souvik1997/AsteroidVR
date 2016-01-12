@@ -4,36 +4,29 @@ var Asteroid = (function() {
       color: options.color
     });
     var points = [];
-    var SIZE = Math.random() * 100 + 50;
+    var SIZE = Math.random() * 400 + 50;
     this.mass = SIZE;
-    for (var i = 0; i < 20; i++)
+    for (var i = 0; i < 15; i++)
     {
-      points.push(new THREE.Vector3(
-        options.position.x + Math.random() * 2*SIZE - SIZE, 
-        options.position.y + Math.random() * 2*SIZE - SIZE,
-        options.position.z + Math.random() * 2*SIZE - SIZE));
+      var point = new THREE.Vector3(
+        Math.random()*2 - 1, 
+        Math.random()*2 - 1,
+        Math.random()*2 - 1).setLength(SIZE);
+      points.push(point);
     }
     var geometry = new THREE.ConvexGeometry(points);
     this.mesh = new Physijs.ConvexMesh(geometry, material, SIZE);
-    this.mesh.position = options.position;
-    var MAX_SPEED = 100;
-    this.movementVector = new THREE.Vector3(
-      Math.random() * 2*MAX_SPEED - MAX_SPEED,
-      Math.random() * 2*MAX_SPEED - MAX_SPEED,
-      Math.random() * 2*MAX_SPEED - MAX_SPEED
-    );
     
-    var MAX_ROTATION_SPEED = 100;
-    this.rotationAxis = new THREE.Vector3(
-      points[0].x + Math.random() * 2*SIZE - SIZE,
-      points[0].y + Math.random() * 2*SIZE - SIZE,
-      points[0].z + Math.random() * 2*SIZE - SIZE
-    );
-    this.rotationSpeed = Math.random() * 0.05 - 0.1;
+    
     this.options = options;
-    this.mesh.updateMatrix();
     this.options.scene.add(this.mesh);
-    this.mesh.setLinearVelocity(this.movementVector);
+    this.mesh.position.copy(options.position);
+    this.mesh.__dirtyPosition = true;
+    this.needsInit = true;
+    
+    //this.options.scene.addEventListener("ready", this.initialize.bind(this));
+    
+    
     
   };
   self.prototype = 
@@ -43,12 +36,31 @@ var Asteroid = (function() {
       this.options.scene.remove(selectedObject);
     },
     
-    update: function(dt) {
-      var cloned_position = this.mesh.position.clone();
-      cloned_position.multiplyScalar(100 * this.mass/Math.pow(cloned_position.distanceTo(new THREE.Vector3(0,0,0)),2));
-      this.mesh.applyCentralForce(cloned_position);
-      this.mesh.updateMatrix();
-    }
+    update: function(dt, origin) {
+      if (this.needsInit)
+      {
+        var MAX_SPEED = 2000;
+        this.movementVector = new THREE.Vector3(
+          Math.random()*2-1,
+          Math.random()*2-1,
+          Math.random()*2-1
+        ).setLength(MAX_SPEED);
+        this.mesh.setLinearVelocity(this.movementVector);
+        this.needsInit = false;
+      }
+      else
+      {
+        var cloned_position = new THREE.Vector3();
+        this.options.scene.updateMatrixWorld();
+        cloned_position.setFromMatrixPosition(this.mesh.matrixWorld).sub(origin);
+        var norm = cloned_position.normalize();
+        var force = norm.multiplyScalar(-100 * this.mass/Math.pow(cloned_position.length(),2));
+        var linearVelocity = this.mesh.getLinearVelocity().clone();
+        force.multiplyScalar(dt);
+        linearVelocity.add(force);
+    		this.mesh.setLinearVelocity(linearVelocity);
+      }
+    },
   };
   return self;
 })();
