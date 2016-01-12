@@ -38,10 +38,10 @@ var AsteroidVR = (function() {
     var cameraMeshMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
     cameraMeshMaterial.transparent = true;
     cameraMeshMaterial.opacity = 0.0;
-    this.cameraMesh = new THREE.Mesh(new THREE.SphereGeometry(0.001), cameraMeshMaterial, 1);
-    this.cameraMesh.position = this.camera.position;
-    this.cameraMesh.rotation = this.camera.rotation;
-    this.scene.add(this.camera);
+    this.cameraMesh = new Physijs.SphereMesh(new THREE.SphereGeometry(0.001), cameraMeshMaterial, 1);
+    this.cameraMesh.position.copy(this.camera.position);
+    this.cameraMesh.add(this.camera);
+    //this.scene.add(this.camera);
     this.scene.add(this.cameraMesh);
   
     // Add skybox
@@ -114,6 +114,7 @@ var AsteroidVR = (function() {
       }
       var thrust = this.cameraMesh.localToWorld(this.controls.moveVector).setLength(100);
       this.cameraMesh.applyCentralForce(thrust);
+      setTimeout(1, this.scene.simulate());
     }).bind(this));
   };
   
@@ -132,9 +133,7 @@ var AsteroidVR = (function() {
       }
       this.resize();
       this.controls.update(dt);
-      this.camera.matrix.copy(this.cameraMesh.matrix);
-      this.camera.matrixWorldNeedsUpdate = true;
-      this.scene.simulate();
+      
       this.effect.render(this.scene, this.camera);
       
     }
