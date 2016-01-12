@@ -1,53 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>title</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-      body {
-        margin: 0px;
-        overflow: hidden;
-      }
-      #game {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="game"></div>
-    <script type="application/x-glsl" id="sky-vertex">  
-    varying vec2 vUV;
+    <head>
+	<title>title</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+	 body {
+	     margin: 0px;
+	     overflow: hidden;
+	 }
+	 #game {
+	     position: absolute;
+	     top: 0;
+	     left: 0;
+	     right: 0;
+	     bottom: 0;
+	 }
+	</style>
+    </head>
+    <body>
+	<div id="game"></div>
+	<script type="application/x-glsl" id="sky-vertex">  
+	 varying vec2 vUV;
 
-    void main() {  
-      vUV = uv;
-      vec4 pos = vec4(position, 1.0);
-      gl_Position = projectionMatrix * modelViewMatrix * pos;
-    }
-    </script>
+	 void main() {  
+	     vUV = uv;
+	     vec4 pos = vec4(position, 1.0);
+	     gl_Position = projectionMatrix * modelViewMatrix * pos;
+	 }
+	</script>
 
-    <script type="application/x-glsl" id="sky-fragment">  
-    uniform sampler2D texture;  
-    varying vec2 vUV;
+	<script type="application/x-glsl" id="sky-fragment">  
+	 uniform sampler2D texture;  
+	 varying vec2 vUV;
 
-    void main() {  
-      vec4 sample = texture2D(texture, vUV);
-      gl_FragColor = vec4(sample.xyz, sample.w);
-    }
-    </script>
-    <script src="third-party/jquery-2.1.4.min.js"></script>
-    <script src="third-party/three.min.js"></script>
-    <script src="third-party/DeviceOrientationControls.js"></script>
-    <script src="third-party/FlyControls.js"></script>
-    <script src="third-party/StereoEffect.js"></script>
-    <script src="third-party/ConvexGeometry.js"></script>
-    <script src="third-party/physi.js"></script>
-    <script src="js/init.js"></script>
-    <script src="js/Asteroid.js"></script>
-    <script src="js/AsteroidVR.js"></script>
-  </body>
+	 void main() {  
+	     vec4 sample = texture2D(texture, vUV);
+	     gl_FragColor = vec4(sample.xyz, sample.w);
+	 }
+	</script>
+	<script src="third-party/jquery-2.1.4.min.js"></script>
+	<script src="third-party/three.min.js"></script>
+	<script src="third-party/DeviceOrientationControls.js"></script>
+	<script src="third-party/FlyControls.js"></script>
+	<script src="third-party/StereoEffect.js"></script>
+	<script src="third-party/ConvexGeometry.js"></script>
+	<script src="third-party/physi.js"></script>
+	<script src="js/init.js"></script>
+	<script src="js/Asteroid.js"></script>
+	<script src="js/AsteroidVR.js"></script>
+    </body>
 </html>

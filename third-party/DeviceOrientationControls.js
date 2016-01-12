@@ -1,3 +1,4 @@
+/*global THREE */
 /**
  * @author richt / http://richt.me
  * @author WestLangley / http://github.com/WestLangley
@@ -52,7 +53,7 @@ THREE.DeviceOrientationControls = function ( object ) {
 
 			quaternion.multiply( q0.setFromAxisAngle( zee, - orient ) );    // adjust for screen orientation
 
-		}
+		};
 
 	}();
 
