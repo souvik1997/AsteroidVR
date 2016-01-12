@@ -189,16 +189,23 @@ THREE.FlyControls = function ( object, domElement ) {
 		var moveMult = delta * this.movementSpeed;
 		var rotMult = delta * this.rollSpeed;
 
-		this.object.translateX( this.moveVector.x * moveMult );
+		/*this.object.translateX( this.moveVector.x * moveMult );
 		this.object.translateY( this.moveVector.y * moveMult );
-		this.object.translateZ( this.moveVector.z * moveMult );
+		this.object.translateZ( this.moveVector.z * moveMult );*/
 
 		this.tmpQuaternion.set( this.rotationVector.x * rotMult, this.rotationVector.y * rotMult, this.rotationVector.z * rotMult, 1 ).normalize();
-		this.object.quaternion.multiply( this.tmpQuaternion );
+		var tmpQuaternion2 = this.object.quaternion.clone();
+    tmpQuaternion2.multiply( this.tmpQuaternion );
 
 		// expose the rotation vector for convenience
-		this.object.rotation.setFromQuaternion( this.object.quaternion, this.object.rotation.order );
-
+		this.object.rotation.setFromQuaternion( tmpQuaternion2, this.object.rotation.order );
+    var rotation = new THREE.Matrix4().extractRotation(this.object.matrix);
+    //this.thrust = this.object.localToWorld(this.moveVector).setLength(1);
+    //this.object.applyCentralForce(thrust);
+    this.object.__dirtyRotation = true;
+    //this.object.__dirtyPosition = true;
+    /*var cancelVelocity = this.object.getAngularVelocity().multiplyScalar(-1);*/
+    //this.object.setAngularVelocity(new THREE.Vector3(0,0,0));
 
 	};
 
@@ -206,8 +213,8 @@ THREE.FlyControls = function ( object, domElement ) {
 
 		var forward = ( this.moveState.forward || ( this.autoForward && ! this.moveState.back ) ) ? 1 : 0;
 
-		this.moveVector.x = ( - this.moveState.left    + this.moveState.right );
-		this.moveVector.y = ( - this.moveState.down    + this.moveState.up );
+		this.moveVector.x = 0; //( - this.moveState.left    + this.moveState.right );
+		this.moveVector.y = 0; //( - this.moveState.down    + this.moveState.up );
 		this.moveVector.z = ( - forward + this.moveState.back );
 
 		//console.log( 'move:', [ this.moveVector.x, this.moveVector.y, this.moveVector.z ] );

@@ -5,6 +5,7 @@ var Asteroid = (function() {
     });
     var points = [];
     var SIZE = Math.random() * 100 + 50;
+    this.mass = SIZE;
     for (var i = 0; i < 20; i++)
     {
       points.push(new THREE.Vector3(
@@ -13,14 +14,15 @@ var Asteroid = (function() {
         options.position.z + Math.random() * 2*SIZE - SIZE));
     }
     var geometry = new THREE.ConvexGeometry(points);
-    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh = new Physijs.ConvexMesh(geometry, material, SIZE);
     this.mesh.position = options.position;
-    var MAX_SPEED = 100000;
+    var MAX_SPEED = 100;
     this.movementVector = new THREE.Vector3(
       Math.random() * 2*MAX_SPEED - MAX_SPEED,
       Math.random() * 2*MAX_SPEED - MAX_SPEED,
       Math.random() * 2*MAX_SPEED - MAX_SPEED
     );
+    
     var MAX_ROTATION_SPEED = 100;
     this.rotationAxis = new THREE.Vector3(
       points[0].x + Math.random() * 2*SIZE - SIZE,
@@ -31,6 +33,7 @@ var Asteroid = (function() {
     this.options = options;
     this.mesh.updateMatrix();
     this.options.scene.add(this.mesh);
+    this.mesh.setLinearVelocity(this.movementVector);
     
   };
   self.prototype = 
@@ -41,9 +44,9 @@ var Asteroid = (function() {
     },
     
     update: function(dt) {
-      var movement = this.movementVector.clone();
-      this.mesh.rotateOnAxis(this.rotationAxis, this.rotationSpeed * dt);
-      this.mesh.position.add(movement.multiplyScalar(dt));
+      var cloned_position = this.mesh.position.clone();
+      cloned_position.multiplyScalar(100 * this.mass/Math.pow(cloned_position.distanceTo(new THREE.Vector3(0,0,0)),2));
+      this.mesh.applyCentralForce(cloned_position);
       this.mesh.updateMatrix();
     }
   };
