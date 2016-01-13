@@ -106,14 +106,49 @@ var AsteroidVR = (function() {
         
         
         this.asteroids = [];
-        for (var i = 0; i < 70; i++)
+        for (var i = 0; i < 20; i++)
         {
-            this.asteroids.push(new Asteroid({
+            var asteroid_options = {
                 position: new THREE.Vector3(Math.random() * 8000 - 4000, Math.random() * 8000 - 4000, Math.random() * 8000 - 4000),
                 scene: this.scene,
                 color: Math.random() * 0xFFFFFF/2 + 0xFFFFFF/2,
-                particleSystem: this.particleSystem
-            }));
+                particleSystem: this.particleSystem,
+                id: Math.floor(Math.random() * 10000000000000)
+            };
+            asteroid_options.onsplit = (function(asteroid) {
+                if (asteroid.mass > 100)
+                {
+                    var new1 = jQuery.extend({}, asteroid_options);
+                    var new2 = jQuery.extend({}, asteroid_options);
+                    new1.position = new THREE.Vector3();
+                    new1.position.setX(asteroid.cloned_position.x + Math.random() * asteroid.mass * 2 - asteroid.mass);
+                    new1.position.setY(asteroid.cloned_position.y + Math.random() * asteroid.mass * 2 - asteroid.mass);
+                    new1.position.setZ(asteroid.cloned_position.z + Math.random() * asteroid.mass * 2 - asteroid.mass);
+                    new1.color = asteroid.options.color;
+                    new1.mass =  Math.random() * asteroid.mass;
+                    new1.id = Math.floor(Math.random() * 10000000000000);
+                    this.asteroids.push(new Asteroid(new1));
+                    new2.position = new THREE.Vector3();
+                    new2.position.setX(asteroid.cloned_position.x + Math.random() * asteroid.mass * 2 - asteroid.mass);
+                    new2.position.setY(asteroid.cloned_position.y + Math.random() * asteroid.mass * 2 - asteroid.mass);
+                    new2.position.setZ(asteroid.cloned_position.z + Math.random() * asteroid.mass * 2 - asteroid.mass);
+                    new2.color = asteroid.options.color;
+                    new2.mass = asteroid.mass - new1.mass;
+                    new2.id = Math.floor(Math.random() * 10000000000000);
+                    this.asteroids.push(new Asteroid(new2));
+                }
+            }).bind(this);
+            asteroid_options.onpermanentremove = (function(asteroid) {
+                for (var i = 0; i < this.asteroids.length; i++)
+                {
+                    if (this.asteroids[i].options.id == asteroid.options.id)
+                    {
+                        this.asteroids.splice(i, 1);
+                        this.scene.remove(asteroid);
+                    }
+                }
+            }).bind(this);
+            this.asteroids.push(new Asteroid(asteroid_options));
         }
         this.scene.add(new THREE.AmbientLight( 0x404040 ));
         var pointLight = new THREE.PointLight(0xffffff, 1, 0);

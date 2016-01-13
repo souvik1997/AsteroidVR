@@ -5,18 +5,17 @@ var Asteroid = (function() {
             color: options.color
         });
         var points = [];
-        var SIZE = Math.random() * 400 + 50;
-        this.mass = SIZE;
+        this.mass = options.mass || Math.random() * 400 + 50;
         for (var i = 0; i < 15; i++)
         {
             var point = new THREE.Vector3(
                 Math.random()*2 - 1, 
                 Math.random()*2 - 1,
-                Math.random()*2 - 1).setLength(SIZE);
+                Math.random()*2 - 1).setLength(this.mass);
             points.push(point);
         }
         var geometry = new THREE.ConvexGeometry(points);
-        this.mesh = new Physijs.ConvexMesh(geometry, material, SIZE);
+        this.mesh = new Physijs.ConvexMesh(geometry, material, this.mass);
         
         
         this.options = options;
@@ -35,12 +34,17 @@ var Asteroid = (function() {
         {
             remove: function(dt) {
                 this.cloned_position = this.cloned_position || new THREE.Vector3();
+                this.cloned_velocity = this.cloned_velocity || this.mesh.getLinearVelocity();
                 this.removal_radius = this.removal_radius || 0;
                 if (!this.removed)
                 {
                     this.options.scene.updateMatrixWorld();
                     this.cloned_position.setFromMatrixPosition(this.mesh.matrixWorld);
                     this.options.scene.remove(this.mesh);
+                    if (this.options.onsplit)
+                    {
+                        this.options.onsplit(this);
+                    }
                 }
                 var particleOptions = {
                     positionRandomness: 0,
@@ -49,7 +53,7 @@ var Asteroid = (function() {
                     colorRandomness: 0.3,
                     turbulence: 10,
                     lifetime: 10,
-                    size: 30-Math.pow(this.removal_radius,2),
+                    size: 40-Math.pow(this.removal_radius,3),
                     sizeRandomness: 10
                 };
                 for (var i = 0; i < 10; i++)
@@ -68,6 +72,10 @@ var Asteroid = (function() {
                 if (particleOptions.size <= 0)
                 {
                     this.permanentRemove = true;
+                    if (this.options.onpermanentremove)
+                    {
+                        this.options.onpermanentremove(this);
+                    }
                 }
             },
             
