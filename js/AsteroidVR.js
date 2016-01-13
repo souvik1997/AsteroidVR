@@ -30,7 +30,7 @@ var AsteroidVR = (function() {
                 setSize: function() {}
             };
         }
-        this.clock = new THREE.Clock();
+        this.clock = new THREE.Clock(true);
         // Setup scene
         this.scene = new Physijs.Scene();
         this.scene.setGravity(new THREE.Vector3(0,0,0));
@@ -50,7 +50,10 @@ var AsteroidVR = (function() {
         this.cameraMesh.position.set(0,0,100);
         this.cameraMesh.__dirtyPosition = true;
         //this.scene.add(this.camera);
-        
+        this.particleSystem = new THREE.GPUParticleSystem({
+            maxParticles: 25000
+        });
+        this.scene.add(this.particleSystem);
         
         // Add skybox
         var geometry = new THREE.SphereGeometry(50000, 20, 20);  
@@ -103,12 +106,13 @@ var AsteroidVR = (function() {
         
         
         this.asteroids = [];
-        for (var i = 0; i < 20; i++)
+        for (var i = 0; i < 70; i++)
         {
             this.asteroids.push(new Asteroid({
                 position: new THREE.Vector3(Math.random() * 8000 - 4000, Math.random() * 8000 - 4000, Math.random() * 8000 - 4000),
                 scene: this.scene,
-                color: Math.random() * 0xFFFFFF/2 + 0xFFFFFF/2
+                color: Math.random() * 0xFFFFFF/2 + 0xFFFFFF/2,
+                particleSystem: this.particleSystem
             }));
         }
         this.scene.add(new THREE.AmbientLight( 0x404040 ));
@@ -144,6 +148,7 @@ var AsteroidVR = (function() {
                 this.resize();
                 this.controls.update(dt);
                 //console.log(this.cameraMesh.getLinearVelocity());
+                this.particleSystem.update(dt);
                 this.effect.render(this.scene, this.camera);
                 
             }

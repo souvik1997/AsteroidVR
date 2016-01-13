@@ -24,6 +24,7 @@ var Asteroid = (function() {
         this.mesh.position.copy(options.position);
         this.mesh.__dirtyPosition = true;
         this.needsInit = true;
+        this.removed = false;
         
         //this.options.scene.addEventListener("ready", this.initialize.bind(this));
         
@@ -32,15 +33,50 @@ var Asteroid = (function() {
     };
     self.prototype = 
         {
-            remove: function() {
-                var selectedObject = this.options.scene.getObjectByName(this.mesh.name);
-                this.options.scene.remove(selectedObject);
+            remove: function(dt) {
+                this.cloned_position = this.cloned_position || new THREE.Vector3();
+                this.removal_radius = this.removal_radius || 0;
+                if (!this.removed)
+                {
+                    this.options.scene.updateMatrixWorld();
+                    this.cloned_position.setFromMatrixPosition(this.mesh.matrixWorld);
+                    this.options.scene.remove(this.mesh);
+                }
+                var particleOptions = {
+                    positionRandomness: 0,
+                    velocityRandomness: 100,
+                    color: 0xff6600,
+                    colorRandomness: 0.3,
+                    turbulence: 10,
+                    lifetime: 10,
+                    size: 30-Math.pow(this.removal_radius,2),
+                    sizeRandomness: 10
+                };
+                for (var i = 0; i < 10; i++)
+                {
+                    
+                    particleOptions.position = this.cloned_position.clone();
+                    particleOptions.position.set(
+                        particleOptions.position.x + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
+                        particleOptions.position.y + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
+                        particleOptions.position.z + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius);
+                    particleOptions.velocity = new THREE.Vector3();
+                    this.options.particleSystem.spawnParticle(particleOptions);
+                }
+                this.removed = true;
+                this.removal_radius+=0.01;
+                if (particleOptions.size <= 0)
+                {
+                    this.permanentRemove = true;
+                }
             },
             
             update: function(dt, origin) {
+                if (this.permanentRemove)
+                    return;
                 if (this.needsInit)
                 {
-                    var MAX_SPEED = 2000;
+                    var MAX_SPEED = 500;
                     this.movementVector = new THREE.Vector3(
                         Math.random()*2-1,
                         Math.random()*2-1,
@@ -48,8 +84,9 @@ var Asteroid = (function() {
                     ).setLength(MAX_SPEED);
                     this.mesh.setLinearVelocity(this.movementVector);
                     this.needsInit = false;
+                    this.count = 0;
                 }
-                else
+                else if (!this.removed)
                 {
                     var cloned_position = new THREE.Vector3();
                     this.options.scene.updateMatrixWorld();
@@ -60,6 +97,15 @@ var Asteroid = (function() {
                     force.multiplyScalar(dt);
                     linearVelocity.add(force);
                     this.mesh.setLinearVelocity(linearVelocity);
+                    this.count++;
+                    if (this.count > 100)
+                    {
+                        this.remove(dt);
+                    }
+                }
+                else
+                {
+                    this.remove(dt);
                 }
             }
         };
