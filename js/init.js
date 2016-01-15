@@ -1,6 +1,6 @@
 /*global AsteroidVR, Physijs */
 // DEBUG
-var vrheadset = false;
+var vrheadset = true;
 var init = function () {
     Physijs.scripts.worker = "third-party/physijs_worker.js";
     var game = new AsteroidVR({
@@ -8,13 +8,13 @@ var init = function () {
         hwaccel: true,
         target: "game"
     });
-    
+
     var loop = function()
     {
         requestAnimationFrame(loop);
         game.update();
     };
-    
+
     loop();
 };
 
@@ -36,5 +36,5 @@ $(document).ready(function(){
     {
         init();
     }
-    
+
 });
