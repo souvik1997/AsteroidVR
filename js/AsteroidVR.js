@@ -21,7 +21,7 @@ var AsteroidVR = (function() {
             this.effect = {
                 render: (function(scene, camera) {
                     scene.updateMatrixWorld();
-                    if (camera.parent === null) 
+                    if (camera.parent === null)
                     {
                         camera.updateMatrixWorld();
                     }
@@ -35,14 +35,24 @@ var AsteroidVR = (function() {
         this.scene = new Physijs.Scene();
         this.scene.setGravity(new THREE.Vector3(0,0,0));
         this.camera = new THREE.PerspectiveCamera((options.vrheadset ? 90 : 45), this.container.offsetWidth/this.container.offsetHeight, 1, 100000);
-        
-        var cameraMeshMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+
+        this.hudcanvas = document.createElement("canvas");
+        this.hudcanvas.width = 1024;
+        this.hudcanvas.height = 1024;
+        this.hudcanvasctx = this.hudcanvas.getContext("2d");
+        this.hudcanvasctx.font = "Bold 80px Arial";
+        this.hudcanvasctx.fillStyle = "rgba(255,0,0,0.95)";
+        this.hudcanvasctx.fillText("Hello!", 150, 500);
+        var canvasTexture = new THREE.Texture(this.hudcanvas);
+        canvasTexture.wrapS = THREE.RepeatWrapping;
+        canvasTexture.repeat.x = -1;
+        canvasTexture.needsUpdate = true;
+        canvasTexture.minFilter = THREE.LinearFilter;
+        var cameraMeshMaterial = new THREE.MeshBasicMaterial({color: 0x000000, map:canvasTexture});
+        cameraMeshMaterial.side = THREE.DoubleSide;
         cameraMeshMaterial.transparent = true;
-        cameraMeshMaterial.opacity = 0.0;
-        this.cameraMesh = new Physijs.SphereMesh(new THREE.SphereGeometry(0.0001), cameraMeshMaterial, 100);
-        this.cameraMesh.visible = false;
+        this.cameraMesh = new Physijs.SphereMesh(new THREE.SphereGeometry(2), cameraMeshMaterial, 100);
         this.scene.add(this.cameraMesh);
-        this.cameraMesh.position.copy(this.camera.position);
         this.cameraMesh.setDamping(0.7, 0.3);
         this.cameraMesh.add(this.camera);
         this.camera.position.set(0,0,0);
@@ -54,30 +64,30 @@ var AsteroidVR = (function() {
             maxParticles: 25000
         });
         this.scene.add(this.particleSystem);
-        
+
         // Add skybox
-        var geometry = new THREE.SphereGeometry(50000, 20, 20);  
-        var uniforms = {  
+        var geometry = new THREE.SphereGeometry(50000, 20, 20);
+        var uniforms = {
             texture: { type: 't', value: THREE.ImageUtils.loadTexture("assets/images/skybox/skybox.jpg") }
         };
 
-        var material = new THREE.ShaderMaterial( {  
+        var material = new THREE.ShaderMaterial( {
             uniforms:       uniforms,
             vertexShader:   document.getElementById('sky-vertex').textContent,
             fragmentShader: document.getElementById('sky-fragment').textContent
         });
 
-        var skyBox = new THREE.Mesh(geometry, material);  
-        skyBox.scale.set(-1, 1, 1);  
-        skyBox.eulerOrder = 'XZY';  
-        skyBox.renderDepth = 1000.0;  
+        var skyBox = new THREE.Mesh(geometry, material);
+        skyBox.scale.set(-1, 1, 1);
+        skyBox.eulerOrder = 'XZY';
+        skyBox.renderDepth = 1000.0;
         this.scene.add(skyBox);
-        
+
         var guide = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 10), new THREE.MeshLambertMaterial({color: 0xFFFFFF}));
-        
+
         this.scene.add(guide);
         guide.position.set(0,0,0);
-        
+
         this.controls = new THREE.FlyControls(this.cameraMesh, this.container);
         this.controls.movementSpeed = 1000;
         this.controls.rollSpeed = 0.5;
@@ -93,7 +103,7 @@ var AsteroidVR = (function() {
             window.removeEventListener("deviceorientation", this._setOrientation, true);
         }).bind(this);
         window.addEventListener("deviceorientation", this._setOrientation, true);
-        
+
         this.resize = (function() {
             var width = this.container.offsetWidth;
             var height = this.container.offsetHeight;
@@ -102,9 +112,9 @@ var AsteroidVR = (function() {
             this.renderer.setSize(width, height);
             this.effect.setSize(width, height);
         }).bind(this);
-        
-        
-        
+
+
+
         this.asteroids = [];
         for (var i = 0; i < 20; i++)
         {
@@ -160,8 +170,8 @@ var AsteroidVR = (function() {
         setTimeout(this.resize, 1);
         this.frameCount = {frames: 0, time: 0};
     };
-    
-    self.prototype = 
+
+    self.prototype =
         {
             update: function() {
                 var dt = this.clock.getDelta();
@@ -173,7 +183,7 @@ var AsteroidVR = (function() {
                     this.frameCount.frames = 0;
                     this.frameCount.time = 0;
                 }
-                
+
                 for (var i = 0; i < this.asteroids.length; i++)
                 {
                     this.asteroids[i].update(this.clock.getDelta(), this.cameraMesh.position);
@@ -185,7 +195,7 @@ var AsteroidVR = (function() {
                 //console.log(this.cameraMesh.getLinearVelocity());
                 this.particleSystem.update(dt);
                 this.effect.render(this.scene, this.camera);
-                
+
             }
         };
     return self;
