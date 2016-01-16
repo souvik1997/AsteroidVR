@@ -34,6 +34,7 @@ var Asteroid = (function() {
     self.prototype =
         {
             remove: function(dt) {
+
                 this.cloned_position = this.cloned_position || new THREE.Vector3();
                 this.cloned_velocity = this.cloned_velocity || this.mesh.getLinearVelocity();
                 this.removal_radius = this.removal_radius || 0;
@@ -47,37 +48,7 @@ var Asteroid = (function() {
                         this.options.onsplit(this);
                     }
                 }
-                var particleOptions = {
-                    positionRandomness: 0,
-                    velocityRandomness: 100,
-                    color: 0xff6600,
-                    colorRandomness: 0.3,
-                    turbulence: 10,
-                    lifetime: 10,
-                    size: 40-Math.pow(this.removal_radius,3),
-                    sizeRandomness: 10
-                };
-                for (var i = 0; i < 10; i++)
-                {
-
-                    particleOptions.position = this.cloned_position.clone();
-                    particleOptions.position.set(
-                        particleOptions.position.x + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
-                        particleOptions.position.y + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
-                        particleOptions.position.z + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius);
-                    particleOptions.velocity = new THREE.Vector3();
-                    this.options.particleSystem.spawnParticle(particleOptions);
-                }
                 this.removed = true;
-                this.removal_radius+=0.01;
-                if (particleOptions.size <= 0)
-                {
-                    this.permanentRemove = true;
-                    if (this.options.onpermanentremove)
-                    {
-                        this.options.onpermanentremove(this);
-                    }
-                }
             },
 
             update: function(dt, origin) {
@@ -107,14 +78,45 @@ var Asteroid = (function() {
                     linearVelocity.add(force);
                     this.mesh.setLinearVelocity(linearVelocity);
                     /*this.count++;
-                    if (this.count > 100)
-                    {
-                        this.remove(dt);
-                    }*/
+                      if (this.count > 100)
+                      {
+                      this.remove(dt);
+                      }*/
                 }
                 else
                 {
-                    this.remove(dt);
+
+                    var particleOptions = {
+                        positionRandomness: 0,
+                        velocityRandomness: 100,
+                        color: 0xff6600,
+                        colorRandomness: 0.3,
+                        turbulence: 10,
+                        lifetime: 10,
+                        size: 40-Math.pow(this.removal_radius,3),
+                        sizeRandomness: 10
+                    };
+                    for (var i = 0; i < 10; i++)
+                    {
+
+                        particleOptions.position = this.cloned_position.clone();
+                        particleOptions.position.set(
+                            particleOptions.position.x + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
+                            particleOptions.position.y + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
+                            particleOptions.position.z + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius);
+                        particleOptions.velocity = new THREE.Vector3();
+                        this.options.particleSystem.spawnParticle(particleOptions);
+                    }
+                    this.removed = true;
+                    this.removal_radius+=0.01;
+                    if (particleOptions.size <= 0)
+                    {
+                        this.permanentRemove = true;
+                        if (this.options.onpermanentremove)
+                        {
+                            this.options.onpermanentremove(this);
+                        }
+                    }
                 }
             }
         };
