@@ -25,6 +25,7 @@ THREE.FlyControls = function ( object, domElement ) {
     this.tmpQuaternion = new THREE.Quaternion();
 
     this.mouseStatus = 0;
+    this.fire = false;
 
     this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0 };
     this.moveVector = new THREE.Vector3( 0, 0, 0 );
@@ -71,6 +72,7 @@ THREE.FlyControls = function ( object, domElement ) {
 
         case 81: /*Q*/ this.moveState.rollLeft = 1; break;
         case 69: /*E*/ this.moveState.rollRight = 1; break;
+        case 32: this.fire = true; break;
 
         }
 
@@ -102,6 +104,7 @@ THREE.FlyControls = function ( object, domElement ) {
 
         case 81: /*Q*/ this.moveState.rollLeft = 0; break;
         case 69: /*E*/ this.moveState.rollRight = 0; break;
+        case 32: this.fire = false; break;
 
         }
 
@@ -189,7 +192,7 @@ THREE.FlyControls = function ( object, domElement ) {
         this.updateMovementVector();
         var moveMult = delta * this.movementSpeed;
         var rotMult = delta * this.rollSpeed;
-        
+
 
         this.tmpQuaternion.set( this.rotationVector.x * rotMult, this.rotationVector.y * rotMult, this.rotationVector.z * rotMult, 1 ).normalize();
         var tmpQ2 = this.object.quaternion.clone();

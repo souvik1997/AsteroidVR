@@ -19,6 +19,7 @@ THREE.DeviceOrientationControls = function ( object ) {
     this.screenOrientation = 0;
 
     this.thrustEnabled = false;
+    this.fire = false;
 
     var onDeviceOrientationChangeEvent = function ( event ) {
 
@@ -29,7 +30,7 @@ THREE.DeviceOrientationControls = function ( object ) {
     var onScreenOrientationChangeEvent = function () {
 
         scope.screenOrientation = window.orientation || 0;
-        
+
     };
 
     // The angles alpha, beta and gamma form a set of intrinsic Tait-Bryan angles of type Z-X'-Y''
@@ -58,13 +59,17 @@ THREE.DeviceOrientationControls = function ( object ) {
 
     }();
 
-    
+
     var touchstart = function(event) {
         event.preventDefault();
         var xpos = event.touches[0].pageX; // screen is rotated
         if ((xpos < screen.width/2))
         {
             this.thrustEnabled = true;
+        }
+        else
+        {
+            this.fire = true;
         }
     };
 
@@ -77,9 +82,13 @@ THREE.DeviceOrientationControls = function ( object ) {
             {
                 this.thrustEnabled = false;
             }
+            else
+            {
+                this.fire = false;
+            }
         }
     };
-    
+
 
     this.update = function (delta) {
 
@@ -89,7 +98,7 @@ THREE.DeviceOrientationControls = function ( object ) {
         var beta   = scope.deviceOrientation.beta  ? THREE.Math.degToRad( scope.deviceOrientation.beta  ) : 0; // X'
         var gamma  = scope.deviceOrientation.gamma ? THREE.Math.degToRad( scope.deviceOrientation.gamma ) : 0; // Y''
         var orient = scope.screenOrientation       ? THREE.Math.degToRad( scope.screenOrientation       ) : 0; // O
-        
+
         setObjectQuaternion( scope.object.quaternion, alpha, beta, gamma, orient );
         scope.object.__dirtyRotation = true;
 
@@ -100,14 +109,14 @@ THREE.DeviceOrientationControls = function ( object ) {
             thrust.multiplyScalar(delta);
             linearVelocity.add(thrust);
             this.object.setLinearVelocity(linearVelocity);
-            
+
         }
 
     };
 
-    
 
-    
+
+
 
     var bind = function(scope, fn) {
         return function() {

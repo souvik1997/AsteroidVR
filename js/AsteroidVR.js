@@ -40,23 +40,66 @@ var AsteroidVR = (function() {
         this.hudcanvas.width = 1024;
         this.hudcanvas.height = 1024;
         this.hudcanvasctx = this.hudcanvas.getContext("2d");
-        this.hudcanvasctx.font = "Bold 80px Arial";
+        this.hudcanvasctx.font = "Bold 30px Arial";
         this.hudcanvasctx.fillStyle = "rgba(255,30,0,1)";
         this.hudcanvasctx.fillText("Hello!", 150, 500);
-        var canvasTexture = new THREE.Texture(this.hudcanvas);
-        canvasTexture.wrapS = THREE.RepeatWrapping;
-        canvasTexture.repeat.x = -1;
-        canvasTexture.needsUpdate = true;
-        canvasTexture.minFilter = THREE.LinearFilter;
-        var cameraMeshMaterial = new THREE.MeshLambertMaterial({color: 0xF00000, map:canvasTexture});
+        this.canvasTexture = new THREE.Texture(this.hudcanvas);
+        this.canvasTexture.wrapS = THREE.RepeatWrapping;
+        this.canvasTexture.repeat.x = -1;
+        this.canvasTexture.needsUpdate = true;
+        this.canvasTexture.minFilter = THREE.LinearFilter;
+        var cameraMeshMaterial = new THREE.MeshLambertMaterial({color: 0xF00000, map:this.canvasTexture});
         cameraMeshMaterial.side = THREE.DoubleSide;
         cameraMeshMaterial.transparent = true;
         cameraMeshMaterial.opacity = 0.5;
         this.cameraMesh = new Physijs.SphereMesh(new THREE.SphereGeometry(15), cameraMeshMaterial, 100);
+        this.cameraMesh.renderOrder = 1;
         this.scene.add(this.cameraMesh);
         this.cameraMesh.setDamping(0.7, 0.3);
         this.cameraMesh.add(this.camera);
         this.camera.position.set(0,0,0);
+        var laserShader = {
+            vertexShader: "uniform vec3 viewVector;" +
+                "uniform float c;" +
+                "uniform float p;" +
+                "varying float intensity;"+
+                "void main() {" +
+                "vec3 vNormal = normalize(normalMatrix * normal);" +
+                "vec3 vNormel = normalize(normalMatrix * viewVector);" +
+                "intensity = pow(c - dot(vNormal, vNormel), p);" +
+                "gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+            fragmentShader: "uniform vec3 glowColor;" +
+                "varying float intensity;" +
+                "void main() {"+
+                "vec3 glow = glowColor * intensity;" +
+                "gl_FragColor = vec4(glow, 1.0); }"
+        };
+        var laserMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                "c": {type: "f", value: 0.6},
+                "p": {type: "f", value: 1},
+                glowColor: {type: "c", value: new THREE.Color(0xff3250)},
+                viewVector: {type: "v3", value: new THREE.Vector3(-30, -35, 100)}
+            },
+            vertexShader: laserShader.vertexShader,
+            fragmentShader: laserShader.fragmentShader,
+            side: THREE.FrontSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+            });
+        var laserGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1000);
+        this.rightLaser = new THREE.Mesh(laserGeometry, laserMaterial.clone());
+        this.leftLaser = new THREE.Mesh(laserGeometry, laserMaterial.clone());
+        this.cameraMesh.add(this.rightLaser);
+        this.cameraMesh.add(this.leftLaser);
+        this.rightLaser.position.set(2, -3, -30);
+        this.leftLaser.position.set(-2, -3, -30);
+        this.rightLaser.rotateX(Math.PI/2);
+        this.leftLaser.rotateX(Math.PI/2);
+        this.rightLaser.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(this.camera.position, this.rightLaser.position);
+        this.leftLaser.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(this.camera.position, this.leftLaser.position);
+        this.leftLaser.visible = false;
+        this.rightLaser.visible = false;
         this.cameraMesh.setLinearVelocity(new THREE.Vector3(0,0,-1));
         this.cameraMesh.position.set(0,0,100);
         this.cameraMesh.__dirtyPosition = true;
@@ -181,21 +224,33 @@ var AsteroidVR = (function() {
                 var dt = this.clock.getDelta();
                 this.frameCount.time += dt;
                 this.frameCount.frames++;
+                this.hudcanvasctx.clearRect(0, 0, this.hudcanvas.width, this.hudcanvas.height);
+
                 if (this.frameCount.time >= 1)
                 {
                     console.log(this.frameCount.frames+" fps");
                     this.frameCount.frames = 0;
                     this.frameCount.time = 0;
                 }
-
+                this.controls.update(dt);
+                if (this.controls.fire)
+                {
+                    this.hudcanvasctx.fillText("FIRE", 150, 500);
+                    this.rightLaser.visible = true;
+                    this.leftLaser.visible = true;
+                }
+                else
+                {
+                    this.rightLaser.visible = false;
+                    this.leftLaser.visible = false;
+                }
                 for (var i = 0; i < this.asteroids.length; i++)
                 {
                     this.asteroids[i].update(this.clock.getDelta(), this.cameraMesh.position);
                 }
-
+                this.canvasTexture.needsUpdate = true;
                 this.scene.simulate();
-                this.resize();
-                this.controls.update(dt);
+                // this.resize();
                 //console.log(this.cameraMesh.getLinearVelocity());
                 this.particleSystem.update(dt);
                 this.effect.render(this.scene, this.camera);
