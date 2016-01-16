@@ -40,9 +40,7 @@ var AsteroidVR = (function() {
         this.hudcanvas.width = 1024;
         this.hudcanvas.height = 1024;
         this.hudcanvasctx = this.hudcanvas.getContext("2d");
-        this.hudcanvasctx.font = "Bold 30px Arial";
-        this.hudcanvasctx.fillStyle = "rgba(255,30,0,1)";
-        this.hudcanvasctx.fillText("Hello!", 150, 500);
+
         this.canvasTexture = new THREE.Texture(this.hudcanvas);
         this.canvasTexture.wrapS = THREE.RepeatWrapping;
         this.canvasTexture.repeat.x = -1;
@@ -235,16 +233,23 @@ var AsteroidVR = (function() {
                     this.frameCount.time = 0;
                 }
                 this.controls.update(dt);
+                this.hudcanvasctx.font = "Bold 15px Arial";
+                this.hudcanvasctx.fillStyle = "rgba(255,30,0,1)";
                 this.hudcanvasctx.rect(150, 550, 80, 30);
                 this.hudcanvasctx.stroke();
                 this.hudcanvasctx.fillRect(150, 550, (1-this.laserTimer/this.laserTimerMax) * 80, 30);
                 if (this.laserTimer > 0)
                 {
                     this.laserTimer -= dt;
+                    this.hudcanvasctx.fillText("RECHARGING", 150, 500);
+                }
+                else
+                {
+                    this.hudcanvasctx.fillText("READY", 150, 500);
                 }
                 if (this.controls.fire && this.laserTimer <= 0)
                 {
-                    this.hudcanvasctx.fillText("FIRE", 150, 500);
+
                     this.rightLaser.visible = true;
                     this.leftLaser.visible = true;
                     this.scene.updateMatrixWorld();
