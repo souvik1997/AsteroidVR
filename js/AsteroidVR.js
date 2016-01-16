@@ -52,7 +52,7 @@ var AsteroidVR = (function() {
         cameraMeshMaterial.side = THREE.DoubleSide;
         cameraMeshMaterial.transparent = true;
         cameraMeshMaterial.opacity = 0.5;
-        this.cameraMesh = new Physijs.SphereMesh(new THREE.SphereGeometry(15), cameraMeshMaterial, 100);
+        this.cameraMesh = new Physijs.SphereMesh(new THREE.SphereGeometry(25), cameraMeshMaterial, 100);
         this.cameraMesh.renderOrder = 1;
         this.scene.add(this.cameraMesh);
         this.cameraMesh.setDamping(0.7, 0.3);
@@ -100,6 +100,8 @@ var AsteroidVR = (function() {
         this.leftLaser.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(this.camera.position, this.leftLaser.position);
         this.leftLaser.visible = false;
         this.rightLaser.visible = false;
+        this.laserTimer = 0;
+        this.laserTimerMax = 0.3;
         this.cameraMesh.setLinearVelocity(new THREE.Vector3(0,0,-1));
         this.cameraMesh.position.set(0,0,100);
         this.cameraMesh.__dirtyPosition = true;
@@ -233,7 +235,14 @@ var AsteroidVR = (function() {
                     this.frameCount.time = 0;
                 }
                 this.controls.update(dt);
-                if (this.controls.fire)
+                this.hudcanvasctx.rect(150, 550, 80, 30);
+                this.hudcanvasctx.stroke();
+                this.hudcanvasctx.fillRect(150, 550, (1-this.laserTimer/this.laserTimerMax) * 80, 30);
+                if (this.laserTimer > 0)
+                {
+                    this.laserTimer -= dt;
+                }
+                if (this.controls.fire && this.laserTimer <= 0)
                 {
                     this.hudcanvasctx.fillText("FIRE", 150, 500);
                     this.rightLaser.visible = true;
@@ -279,6 +288,7 @@ var AsteroidVR = (function() {
                             asteroidMeshMap[collision.object.uuid].remove();
                         }
                     }
+                    this.laserTimer = this.laserTimerMax;
                 }
                 else
                 {
