@@ -264,6 +264,21 @@ var AsteroidVR = (function() {
                             asteroidMeshMap[collision.object.uuid].remove();
                         }
                     }
+                    var rightLaserGlobalPosition = new THREE.Vector3();
+                    var rightLaserGlobalRotationQuaternion = new THREE.Quaternion();
+                    var rightLaserGlobalScale = new THREE.Vector3();
+                    this.rightLaser.matrixWorld.decompose(rightLaserGlobalPosition, rightLaserGlobalRotationQuaternion, rightLaserGlobalScale);
+                    var rightLaserGlobalRotation = (new THREE.Vector3(0, -1, 0)).applyQuaternion(rightLaserGlobalRotationQuaternion).normalize();
+                    var rightRaycaster = new THREE.Raycaster(rightLaserGlobalPosition, rightLaserGlobalRotation, 0, 10000);
+                    var rightCollisions = rightRaycaster.intersectObjects(asteroidMeshes, false);
+                    for (var collision of rightCollisions)
+                    {
+                        if (collision.object.userData.name === "Asteroid")
+                        {
+                            console.log("Collision with "+collision);
+                            asteroidMeshMap[collision.object.uuid].remove();
+                        }
+                    }
                 }
                 else
                 {

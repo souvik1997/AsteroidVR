@@ -23,13 +23,14 @@ var Asteroid = (function() {
         this.mesh.position.copy(options.position);
         this.mesh.__dirtyPosition = true;
         this.needsInit = true;
-        this.removed = false;
+
 
         //this.options.scene.addEventListener("ready", this.initialize.bind(this));
 
 
 
     };
+    this.removed = false;
     self.prototype =
         {
             remove: function(dt) {
