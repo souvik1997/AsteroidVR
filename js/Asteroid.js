@@ -9,28 +9,28 @@ var Asteroid = (function() {
         for (var i = 0; i < 15; i++)
         {
             var point = new THREE.Vector3(
-                Math.random()*2 - 1, 
+                Math.random()*2 - 1,
                 Math.random()*2 - 1,
                 Math.random()*2 - 1).setLength(this.mass);
             points.push(point);
         }
         var geometry = new THREE.ConvexGeometry(points);
         this.mesh = new Physijs.ConvexMesh(geometry, material, this.mass);
-        
-        
+        this.mesh.userData = {name:"Asteroid"};
+
         this.options = options;
         this.options.scene.add(this.mesh);
         this.mesh.position.copy(options.position);
         this.mesh.__dirtyPosition = true;
         this.needsInit = true;
         this.removed = false;
-        
+
         //this.options.scene.addEventListener("ready", this.initialize.bind(this));
-        
-        
-        
+
+
+
     };
-    self.prototype = 
+    self.prototype =
         {
             remove: function(dt) {
                 this.cloned_position = this.cloned_position || new THREE.Vector3();
@@ -58,7 +58,7 @@ var Asteroid = (function() {
                 };
                 for (var i = 0; i < 10; i++)
                 {
-                    
+
                     particleOptions.position = this.cloned_position.clone();
                     particleOptions.position.set(
                         particleOptions.position.x + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
@@ -78,7 +78,7 @@ var Asteroid = (function() {
                     }
                 }
             },
-            
+
             update: function(dt, origin) {
                 if (this.permanentRemove)
                     return;
@@ -105,11 +105,11 @@ var Asteroid = (function() {
                     force.multiplyScalar(dt);
                     linearVelocity.add(force);
                     this.mesh.setLinearVelocity(linearVelocity);
-                    this.count++;
+                    /*this.count++;
                     if (this.count > 100)
                     {
                         this.remove(dt);
-                    }
+                    }*/
                 }
                 else
                 {

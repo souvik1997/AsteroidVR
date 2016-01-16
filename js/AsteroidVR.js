@@ -238,6 +238,32 @@ var AsteroidVR = (function() {
                     this.hudcanvasctx.fillText("FIRE", 150, 500);
                     this.rightLaser.visible = true;
                     this.leftLaser.visible = true;
+                    this.scene.updateMatrixWorld();
+                    var asteroidMeshes = [];
+                    var asteroidMeshMap = {};
+                    for (var a of this.asteroids)
+                    {
+                        a.mesh.geometry.computeFaceNormals();
+                        a.mesh.updateMatrixWorld();
+                        asteroidMeshes.push(a.mesh);
+                        asteroidMeshMap[a.mesh.uuid] = a;
+                    }
+                    var leftLaserGlobalPosition = new THREE.Vector3();
+                    var leftLaserGlobalRotationQuaternion = new THREE.Quaternion();
+                    var leftLaserGlobalScale = new THREE.Vector3();
+                    this.leftLaser.matrixWorld.decompose(leftLaserGlobalPosition, leftLaserGlobalRotationQuaternion, leftLaserGlobalScale);
+                    var leftLaserGlobalRotation = (new THREE.Vector3(0, -1, 0)).applyQuaternion(leftLaserGlobalRotationQuaternion).normalize();
+                    var leftRaycaster = new THREE.Raycaster(leftLaserGlobalPosition, leftLaserGlobalRotation, 0, 10000);
+                    var leftCollisions = leftRaycaster.intersectObjects(asteroidMeshes, false);
+                    console.log(JSON.stringify(leftLaserGlobalRotation));
+                    for (var collision of leftCollisions)
+                    {
+                        if (collision.object.userData.name === "Asteroid")
+                        {
+                            console.log("Collision with "+collision);
+                            asteroidMeshMap[collision.object.uuid].remove();
+                        }
+                    }
                 }
                 else
                 {
