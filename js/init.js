@@ -1,12 +1,14 @@
 /*global AsteroidVR, Physijs */
 // DEBUG
-var vrheadset = false;
+var vrheadset = true;
 var init = function () {
     Physijs.scripts.worker = "third-party/physijs_worker.js";
     var game = new AsteroidVR({
         vrheadset: vrheadset,
         hwaccel: true,
-        target: "game"
+        target: "game",
+        explosions: true,
+        maxAsteroids: 100
     });
 
     var loop = function()

@@ -84,7 +84,7 @@ var AsteroidVR = (function() {
             side: THREE.FrontSide,
             blending: THREE.AdditiveBlending,
             transparent: true
-            });
+        });
         var laserGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1000);
         this.rightLaser = new THREE.Mesh(laserGeometry, laserMaterial.clone());
         this.leftLaser = new THREE.Mesh(laserGeometry, laserMaterial.clone());
@@ -104,11 +104,13 @@ var AsteroidVR = (function() {
         this.cameraMesh.position.set(0,0,100);
         this.cameraMesh.__dirtyPosition = true;
         //this.scene.add(this.camera);
-        this.particleSystem = new THREE.GPUParticleSystem({
-            maxParticles: 25000
-        });
-        this.scene.add(this.particleSystem);
-
+        if (options.explosions)
+        {
+            this.particleSystem = new THREE.GPUParticleSystem({
+                maxParticles: 2500
+            });
+            this.scene.add(this.particleSystem);
+        }
         // Add skybox
         var geometry = new THREE.SphereGeometry(50000, 20, 20);
         var uniforms = {
@@ -166,9 +168,12 @@ var AsteroidVR = (function() {
                 position: new THREE.Vector3(Math.random() * 8000 - 4000, Math.random() * 8000 - 4000, Math.random() * 8000 - 4000),
                 scene: this.scene,
                 color: Math.random() * 0xFFFFFF/2 + 0xFFFFFF/2,
-                particleSystem: this.particleSystem,
                 id: Math.floor(Math.random() * 10000000000000)
             };
+            if (this.particleSystem)
+            {
+                asteroid_options.particleSystem = this.particleSystem;
+            }
             asteroid_options.onsplit = (function(asteroid) {
                 if (asteroid.mass > 100)
                 {
@@ -208,14 +213,15 @@ var AsteroidVR = (function() {
         var pointLight = new THREE.PointLight(0xffffff, 1, 0);
         pointLight.position.set(0,0,0);
         this.scene.add(pointLight);
-        var cameraPointLight = new THREE.PointLight(0xffffff,1, 0);
-        cameraPointLight.position.set(0, 0, 0);
-        this.cameraMesh.add(cameraPointLight);
+        /*var cameraPointLight = new THREE.PointLight(0xffffff,1, 0);
+          cameraPointLight.position.set(0, 0, 0);
+          this.cameraMesh.add(cameraPointLight);*/
         var hemisphereLight = new THREE.HemisphereLight(0xfafafa, 0x0e0e0e, 1);
         this.scene.add(hemisphereLight);
         window.addEventListener("resize", this.resize, false);
         setTimeout(this.resize, 1);
         this.frameCount = {frames: 0, time: 0};
+        this.options = options;
     };
 
     self.prototype =
@@ -300,6 +306,11 @@ var AsteroidVR = (function() {
                     this.rightLaser.visible = false;
                     this.leftLaser.visible = false;
                 }
+                for (var i = 0; i < this.asteroids.length - this.options.maxAsteroids; i++)
+                {
+                    this.scene.remove(this.asteroids[0].mesh);
+                    this.asteroids.splice(0, 1);
+                }
                 for (var i = 0; i < this.asteroids.length; i++)
                 {
                     this.asteroids[i].update(this.clock.getDelta(), this.cameraMesh.position);
@@ -308,7 +319,10 @@ var AsteroidVR = (function() {
                 this.scene.simulate();
                 // this.resize();
                 //console.log(this.cameraMesh.getLinearVelocity());
-                this.particleSystem.update(dt);
+                if (this.particleSystem)
+                {
+                    this.particleSystem.update(dt);
+                }
                 this.effect.render(this.scene, this.camera);
 
             }

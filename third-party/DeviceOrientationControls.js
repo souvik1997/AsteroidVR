@@ -62,14 +62,17 @@ THREE.DeviceOrientationControls = function ( object ) {
 
     var touchstart = function(event) {
         event.preventDefault();
-        var xpos = event.touches[0].pageX; // screen is rotated
-        if ((xpos < screen.width/2))
+        for (var i = 0; i < event.changedTouches.length; i++)
         {
-            this.thrustEnabled = true;
-        }
-        else
-        {
-            this.fire = true;
+            var xpos = event.changedTouches[i].pageX; // screen is rotated
+            if ((xpos < screen.width/2))
+            {
+                this.thrustEnabled = true;
+            }
+            else
+            {
+                this.fire = true;
+            }
         }
     };
 

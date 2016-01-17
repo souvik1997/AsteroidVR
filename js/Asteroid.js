@@ -93,22 +93,25 @@ var Asteroid = (function() {
                         colorRandomness: 0.3,
                         turbulence: 10,
                         lifetime: 10,
-                        size: 40-Math.pow(this.removal_radius,3),
+                        size: 40-this.removal_radius,
                         sizeRandomness: 10
                     };
-                    for (var i = 0; i < 10; i++)
+                    if (this.options.particleSystem)
                     {
+                        for (var i = 0; i < 5; i++)
+                        {
 
-                        particleOptions.position = this.cloned_position.clone();
-                        particleOptions.position.set(
-                            particleOptions.position.x + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
-                            particleOptions.position.y + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
-                            particleOptions.position.z + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius);
-                        particleOptions.velocity = new THREE.Vector3();
-                        this.options.particleSystem.spawnParticle(particleOptions);
+                            particleOptions.position = this.cloned_position.clone();
+                            particleOptions.position.set(
+                                particleOptions.position.x + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
+                                particleOptions.position.y + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius,
+                                particleOptions.position.z + Math.random() * 2*this.mass*this.removal_radius - this.mass*this.removal_radius);
+                            particleOptions.velocity = new THREE.Vector3();
+                            this.options.particleSystem.spawnParticle(particleOptions);
+                        }
                     }
                     this.removed = true;
-                    this.removal_radius+=0.01;
+                    this.removal_radius+=0.1;
                     if (particleOptions.size <= 0)
                     {
                         this.permanentRemove = true;
