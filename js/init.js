@@ -1,6 +1,6 @@
 /*global AsteroidVR, Physijs */
 // DEBUG
-var vrheadset = true;
+var vrheadset = false;
 var init = function () {
     Physijs.scripts.worker = "third-party/physijs_worker.js";
     var game = new AsteroidVR({

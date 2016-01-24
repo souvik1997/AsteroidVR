@@ -46,7 +46,7 @@ var AsteroidVR = (function() {
         this.canvasTexture.repeat.x = -1;
         this.canvasTexture.needsUpdate = true;
         this.canvasTexture.minFilter = THREE.LinearFilter;
-        var cameraMeshMaterial = new THREE.MeshLambertMaterial({color: 0xF00000, map:this.canvasTexture});
+        var cameraMeshMaterial = new THREE.MeshLambertMaterial({color: 0xFFFFFF, map:this.canvasTexture});
         cameraMeshMaterial.side = THREE.DoubleSide;
         cameraMeshMaterial.transparent = true;
         cameraMeshMaterial.opacity = 0.5;
@@ -55,6 +55,15 @@ var AsteroidVR = (function() {
         this.scene.add(this.cameraMesh);
         this.cameraMesh.setDamping(0.7, 0.3);
         this.cameraMesh.add(this.camera);
+
+        this.maxHealth = 1000000000;
+        this.health = this.maxHealth;
+        this.cameraMesh.addEventListener("collision", (function (other_object, relative_velocity, relative_rotation, contact_normal){
+            this.health -= relative_velocity.lengthSq() * other_object.mass;
+        }).bind(this));
+        this.attraction = 100;
+
+
         this.camera.position.set(0,0,0);
         var laserShader = {
             vertexShader: "uniform vec3 viewVector;" +
@@ -243,7 +252,8 @@ var AsteroidVR = (function() {
                 this.hudcanvasctx.fillStyle = "rgba(255,30,0,1)";
                 this.hudcanvasctx.rect(150, 550, 80, 30);
                 this.hudcanvasctx.stroke();
-                this.hudcanvasctx.fillRect(150, 550, (1-this.laserTimer/this.laserTimerMax) * 80, 30);
+                this.hudcanvasctx.fillRect(150, 550, Math.min(1, (1-this.laserTimer/this.laserTimerMax)) * 80, 30);
+                this.hudcanvasctx.stroke();
                 if (this.laserTimer > 0)
                 {
                     this.laserTimer -= dt;
@@ -253,6 +263,17 @@ var AsteroidVR = (function() {
                 {
                     this.hudcanvasctx.fillText("READY", 150, 500);
                 }
+                this.hudcanvasctx.stroke();
+                this.hudcanvasctx.fillStyle = "rgba(10, 240, 0, 1)";
+                this.hudcanvasctx.rect(280, 550, 80, 30);
+                this.hudcanvasctx.stroke();
+                this.hudcanvasctx.fillRect(280, 550, Math.max(0, (this.health/this.maxHealth)) * 80, 30);
+
+                this.hudcanvasctx.stroke();
+
+                // Regenerate health
+                this.health += (this.maxHealth - this.health)/300;
+
                 if (this.controls.fire && this.laserTimer <= 0)
                 {
 
@@ -313,8 +334,9 @@ var AsteroidVR = (function() {
                 }
                 for (var i = 0; i < this.asteroids.length; i++)
                 {
-                    this.asteroids[i].update(this.clock.getDelta(), this.cameraMesh.position);
+                    this.asteroids[i].update(this.clock.getDelta(), this.cameraMesh.position, this.attraction);
                 }
+                this.attraction *= 1.000001;
                 this.canvasTexture.needsUpdate = true;
                 this.scene.simulate();
                 // this.resize();

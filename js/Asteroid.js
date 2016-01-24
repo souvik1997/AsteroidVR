@@ -51,7 +51,7 @@ var Asteroid = (function() {
                 this.removed = true;
             },
 
-            update: function(dt, origin) {
+            update: function(dt, origin, attraction) {
                 if (this.permanentRemove)
                     return;
                 if (this.needsInit)
@@ -72,7 +72,7 @@ var Asteroid = (function() {
                     this.options.scene.updateMatrixWorld();
                     cloned_position.setFromMatrixPosition(this.mesh.matrixWorld).sub(origin);
                     var norm = cloned_position.normalize();
-                    var force = norm.multiplyScalar(-100 * this.mass/Math.pow(cloned_position.length(),2));
+                    var force = norm.multiplyScalar(-attraction * this.mass/Math.pow(cloned_position.length(),2));
                     var linearVelocity = this.mesh.getLinearVelocity().clone();
                     force.multiplyScalar(dt);
                     linearVelocity.add(force);
@@ -98,7 +98,7 @@ var Asteroid = (function() {
                     };
                     if (this.options.particleSystem)
                     {
-                        for (var i = 0; i < 5; i++)
+                        for (var i = 0; i < 30; i++)
                         {
 
                             particleOptions.position = this.cloned_position.clone();
